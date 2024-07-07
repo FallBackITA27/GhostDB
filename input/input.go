@@ -112,11 +112,12 @@ func readTimeFromRKGFormat(inputBytes [3]byte) int32 {
 /// @brief Performs YAZ0 decompression on a given buffer.
 /// @return The size of the decompressed data.
 /// @addr{0x80218C2C}
-func decompressYAZ0(src []byte, dst []byte) int32 {
+func decompressYAZ0(src []byte) []byte {
 	// Original function here turns 4 bytes and reads them BE into an int32
 	// might be worth checking if this works regardless of endianness
     var expandSize int32 = int32(src[4]) << 24 | int32(src[5]) << 16 | int32(src[6]) << 8 | int32(src[7])
-    var srcIdx int32 = 0x10;
+    var dst []byte = []byte{}
+	var srcIdx int32 = 0x10;
     var code uint8 = 0;
     var bufferByte uint8 = 0;
 	var destIdx int32 = 0
@@ -155,5 +156,5 @@ func decompressYAZ0(src []byte, dst []byte) int32 {
             }
         }
     }
-    return expandSize;
+    return dst;
 }
