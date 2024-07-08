@@ -107,6 +107,17 @@ func readTimeFromRKGFormat(inputBytes [3]byte) int32 {
 	return ((minutes) * 30000) + ((seconds) * 1000) + milliseconds
 }
 
+type InputState struct {
+	// I won't include drift as it is kinda superfluous
+	Accelerate bool
+	Brake bool
+	Drift bool
+	Item bool
+	Pause bool // New with CTGP, could be junk otherwise
+	Stick [2]byte // (horizontal, vertical)
+	Trick byte // 0 for none, the rest works like CSS properties (clockwise, 1 is up)
+}
+
 // Got this from https://github.com/vabold/Kinoko/blob/main/source/egg/core/Decomp.cc
 
 // Performs YAZ0 decompression on a given buffer.
