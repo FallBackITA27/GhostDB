@@ -109,52 +109,50 @@ func readTimeFromRKGFormat(inputBytes [3]byte) int32 {
 
 // Got this from https://github.com/vabold/Kinoko/blob/main/source/egg/core/Decomp.cc
 
-/// @brief Performs YAZ0 decompression on a given buffer.
-/// @return The size of the decompressed data.
-/// @addr{0x80218C2C}
+// Performs YAZ0 decompression on a given buffer.
 func decompressYAZ0(src []byte) []byte {
 	// Original function here turns 4 bytes and reads them BE into an int32
 	// might be worth checking if this works regardless of endianness
-    var expandSize int32 = int32(src[4]) << 24 | int32(src[5]) << 16 | int32(src[6]) << 8 | int32(src[7])
-    var dst []byte = []byte{}
-	var srcIdx int32 = 0x10;
-    var code uint8 = 0;
-    var bufferByte uint8 = 0;
+	var expandSize int32 = int32(src[4])<<24 | int32(src[5])<<16 | int32(src[6])<<8 | int32(src[7])
+	var dst []byte = []byte{}
+	var srcIdx int32 = 0x10
+	var code uint8 = 0
+	var bufferByte uint8 = 0
 	var destIdx int32 = 0
-    for ; destIdx < expandSize; code >>= 1 {
-        if (code == 0) {
-            code = 0x80;
-            bufferByte = src[srcIdx];
+	for ; destIdx < expandSize; code >>= 1 {
+		if code == 0 {
+			code = 0x80
+			bufferByte = src[srcIdx]
 			srcIdx++
 		}
 
-        // Direct copy (code bit = 1)
-        if ((bufferByte & code) == 1) {
-            dst[destIdx] = src[srcIdx];
-			destIdx++;
-			srcIdx++;
-        } else { // RLE compressed data (code bit = 0)
-            // Lower nibble of byte1 + byte2
-            var distToDest int32 = (int32(src[srcIdx]) << 8) | int32(src[srcIdx + 1]);
-            srcIdx *= 2;
-            var runSrcIdx int32 = destIdx - (distToDest & 0xfff);
+		// Direct copy (code bit = 1)
+		if (bufferByte & code) == 1 {
+			dst[destIdx] = src[srcIdx]
+			destIdx++
+			srcIdx++
+		} else { // RLE compressed data (code bit = 0)
+			// Lower nibble of byte1 + byte2
+			var distToDest int32 = (int32(src[srcIdx]) << 8) | int32(src[srcIdx+1])
+			srcIdx *= 2
+			var runSrcIdx int32 = destIdx - (distToDest & 0xfff)
 
-            // Upper nibble of byte 1
+			// Upper nibble of byte 1
 			var runLen int32
-			if ((distToDest >> 12) == 0) {
+			if (distToDest >> 12) == 0 {
 				runLen = int32(src[srcIdx]) + 0x12
 				srcIdx++
 			} else {
 				runLen = (distToDest >> 12) + 2
 			}
 
-			for ; runLen > 0; {
-                dst[destIdx] = dst[runSrcIdx - 1];
+			for runLen > 0 {
+				dst[destIdx] = dst[runSrcIdx-1]
 				runLen--
 				destIdx++
 				runSrcIdx++
-            }
-        }
-    }
-    return dst;
+			}
+		}
+	}
+	return dst
 }
